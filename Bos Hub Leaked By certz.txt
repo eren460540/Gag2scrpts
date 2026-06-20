@@ -1,0 +1,1474 @@
+-- =============================================
+-- BOS HUB - Grow A Garden 2 Script V15 (ULTIMATE EDITION)
+-- Developed by B 🇹🇭
+-- UI: White & Blue Premium
+-- Features: AutoSell (Standing Still - No Warp) | ESP | Shortcut Buttons
+-- =============================================
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- =============================================
+-- SAFE CORE GUI
+-- =============================================
+local function getCoreGui()
+    local success, result = pcall(function()
+        if gethui then return gethui() end
+    end)
+    if success and result then return result end
+    
+    local success2, result2 = pcall(function()
+        if game:GetService("CoreGui") then return game:GetService("CoreGui") end
+    end)
+    if success2 and result2 then return result2 end
+    
+    if LocalPlayer and LocalPlayer.PlayerGui then
+        return LocalPlayer.PlayerGui
+    end
+    return nil
+end
+
+local CoreGui = getCoreGui()
+if not CoreGui then
+    warn("BOS HUB: Cannot find CoreGui!")
+    return
+end
+
+-- =============================================
+-- CREDIT SCREEN
+-- =============================================
+local CreditGui = Instance.new("ScreenGui")
+CreditGui.Name = "BOS_Credit"
+CreditGui.Parent = CoreGui
+CreditGui.ResetOnSpawn = false
+CreditGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local Bg = Instance.new("Frame")
+Bg.Size = UDim2.new(1, 0, 1, 0)
+Bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Bg.BackgroundTransparency = 0.5
+Bg.ZIndex = 999
+Bg.Parent = CreditGui
+
+local CreditFrame = Instance.new("Frame")
+CreditFrame.Size = UDim2.new(0, 400, 0, 240)
+CreditFrame.Position = UDim2.new(0.5, -200, 0.5, -120)
+CreditFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CreditFrame.BackgroundTransparency = 0.05
+CreditFrame.BorderSizePixel = 0
+CreditFrame.ZIndex = 1000
+CreditFrame.Parent = CreditGui
+Instance.new("UICorner", CreditFrame).CornerRadius = UDim.new(0, 16)
+
+local CreditStroke = Instance.new("UIStroke")
+CreditStroke.Thickness = 2
+CreditStroke.Color = Color3.fromRGB(100, 180, 255)
+CreditStroke.Transparency = 0.2
+CreditStroke.Parent = CreditFrame
+
+local DevText = Instance.new("TextLabel")
+DevText.Size = UDim2.new(1, 0, 0, 35)
+DevText.Position = UDim2.new(0, 0, 0, 40)
+DevText.BackgroundTransparency = 1
+DevText.Text = "พัฒนาโดย"
+DevText.TextColor3 = Color3.fromRGB(50, 50, 80)
+DevText.Font = Enum.Font.GothamBold
+DevText.TextSize = 22
+DevText.ZIndex = 1000
+DevText.Parent = CreditFrame
+
+local BText = Instance.new("TextLabel")
+BText.Size = UDim2.new(1, 0, 0, 70)
+BText.Position = UDim2.new(0, 0, 0, 70)
+BText.BackgroundTransparency = 1
+BText.Text = "B"
+BText.TextColor3 = Color3.fromRGB(80, 160, 255)
+BText.Font = Enum.Font.GothamBlack
+BText.TextSize = 65
+BText.ZIndex = 1000
+BText.Parent = CreditFrame
+
+local FlagText = Instance.new("TextLabel")
+FlagText.Size = UDim2.new(1, 0, 0, 35)
+FlagText.Position = UDim2.new(0, 0, 0, 140)
+FlagText.BackgroundTransparency = 1
+FlagText.Text = "🇹🇭  THAILAND  🇹🇭"
+FlagText.TextColor3 = Color3.fromRGB(80, 80, 120)
+FlagText.Font = Enum.Font.GothamBold
+FlagText.TextSize = 16
+FlagText.ZIndex = 1000
+FlagText.Parent = CreditFrame
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, 0, 0, 20)
+LoadingText.Position = UDim2.new(0, 0, 0, 190)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "✦ กำลังโหลด BOS HUB ULTIMATE... ✦"
+LoadingText.TextColor3 = Color3.fromRGB(100, 150, 255)
+LoadingText.Font = Enum.Font.Gotham
+LoadingText.TextSize = 12
+LoadingText.ZIndex = 1000
+LoadingText.Parent = CreditFrame
+
+task.delay(3, function()
+    pcall(function()
+        CreditGui:Destroy()
+    end)
+end)
+
+task.wait(3.5)
+
+-- =============================================
+-- SETTINGS
+-- =============================================
+getgenv().BOS = getgenv().BOS or {}
+local BOS = getgenv().BOS
+
+-- Movement
+BOS.Speed = BOS.Speed or 100
+BOS.Noclip = BOS.Noclip or false
+BOS.JumpPower = BOS.JumpPower or 100
+BOS.InfiniteJump = BOS.InfiniteJump or false
+
+-- Farm
+BOS.AutoHarvest = BOS.AutoHarvest or false
+BOS.AutoWater = BOS.AutoWater or false
+BOS.AutoFertilize = BOS.AutoFertilize or false
+BOS.AutoPlant = BOS.AutoPlant or false
+BOS.StealFruit = BOS.StealFruit or false
+BOS.AutoCollectDrops = BOS.AutoCollectDrops or false
+BOS.FarmRange = BOS.FarmRange or 300
+BOS.FarmSpeed = BOS.FarmSpeed or 0.01
+
+-- Auto Systems
+BOS.AutoSell = BOS.AutoSell or false
+BOS.AutoQuest = BOS.AutoQuest or false
+BOS.AutoClaimReward = BOS.AutoClaimReward or false
+BOS.AutoPetCollect = BOS.AutoPetCollect or false
+BOS.AntiAFK = BOS.AntiAFK or false
+BOS.AutoUpgrade = BOS.AutoUpgrade or false
+
+-- Visual
+BOS.FullBright = BOS.FullBright or false
+BOS.NoFog = BOS.NoFog or false
+BOS.ChromaBloom = BOS.ChromaBloom or false
+
+-- ESP
+BOS.ShowESP = BOS.ShowESP or false
+
+-- UI Color
+BOS.UI_Color = BOS.UI_Color or Color3.fromRGB(100, 180, 255)
+
+print("╔════════════════════════════════════════╗")
+print("║   BOS HUB ULTIMATE - LOADING...       ║")
+print("║   Grow A Garden 2 Edition             ║")
+print("║   Developed by B 🇹🇭                   ║")
+print("╚════════════════════════════════════════╝")
+
+-- =============================================
+-- HELPER FUNCTIONS
+-- =============================================
+
+local function GetCharacter()
+    local char = LocalPlayer.Character
+    if not char or char.Parent == nil then
+        LocalPlayer.CharacterAdded:Wait()
+        char = LocalPlayer.Character
+    end
+    return char
+end
+
+local function GetRoot()
+    local char = GetCharacter()
+    if not char then return nil end
+    return char:FindFirstChild("HumanoidRootPart")
+end
+
+local function GetHumanoid()
+    local char = GetCharacter()
+    if not char then return nil end
+    return char:FindFirstChild("Humanoid")
+end
+
+local function ApplyMovementSettings()
+    local hum = GetHumanoid()
+    if hum then
+        if BOS.Speed then hum.WalkSpeed = BOS.Speed end
+        if BOS.JumpPower then hum.JumpPower = BOS.JumpPower end
+    end
+end
+
+local function TriggerPrompt(prompt)
+    if not prompt or not prompt.Enabled then return false end
+    
+    if fireproximityprompt then
+        return pcall(function() fireproximityprompt(prompt) end)
+    elseif prompt.InputHoldBegin then
+        return pcall(function() prompt.InputHoldBegin() end)
+    elseif prompt:IsA("ProximityPrompt") then
+        return pcall(function() prompt:Fire() end)
+    end
+    return false
+end
+
+-- =============================================
+-- IS HARVESTABLE
+-- =============================================
+local function isHarvestable(prompt)
+    if not prompt or not prompt.Enabled then return false end
+    
+    local actionText = string.lower(prompt.ActionText or "")
+    local parent = prompt.Parent
+    local parentName = string.lower(parent and parent.Name or "")
+    
+    local blocklist = {
+        "shop", "store", "buy", "sell", "upgrade", "trade",
+        "quest", "mission", "daily", "reward", "claim",
+        "storage", "chest", "inventory", "craft", "recipe",
+        "menu", "setting", "profile", "leaderboard",
+        "talk", "speak", "npc", "chat", "teleport", "warp",
+        "add friend", "friend", "invite", "join"
+    }
+    
+    for _, word in pairs(blocklist) do
+        if actionText:find(word) then
+            return false
+        end
+    end
+    
+    local allowlist = {
+        "harvest", "collect", "pick", "gather", "cut",
+        "water", "feed", "pet", "fertilize", "plant", "seed"
+    }
+    
+    for _, word in pairs(allowlist) do
+        if actionText:find(word) then
+            return true
+        end
+    end
+    
+    if parent and parent:IsA("Model") then
+        if parentName:find("tree") or parentName:find("plant") or 
+           parentName:find("crop") or parentName:find("flower") then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- =============================================
+-- CREATE UI (Premium White & Blue)
+-- =============================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BOS_Hub"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local LogoBtn = Instance.new("TextButton")
+LogoBtn.Size = UDim2.new(0, 55, 0, 55)
+LogoBtn.Position = UDim2.new(0, 15, 0, 15)
+LogoBtn.BackgroundColor3 = BOS.UI_Color
+LogoBtn.Text = "B"
+LogoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LogoBtn.Font = Enum.Font.GothamBlack
+LogoBtn.TextSize = 26
+LogoBtn.BorderSizePixel = 0
+LogoBtn.Draggable = true
+LogoBtn.Parent = ScreenGui
+Instance.new("UICorner", LogoBtn).CornerRadius = UDim.new(1, 0)
+
+local LogoGlow = Instance.new("UIStroke")
+LogoGlow.Thickness = 2
+LogoGlow.Color = Color3.fromRGB(255, 255, 255)
+LogoGlow.Transparency = 0.3
+LogoGlow.Parent = LogoBtn
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 550, 0, 550)
+MainFrame.Position = UDim2.new(0.5, -275, 0.5, -275)
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.BackgroundTransparency = 0.03
+MainFrame.BorderSizePixel = 0
+MainFrame.Visible = false
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1.5
+MainStroke.Color = BOS.UI_Color
+MainStroke.Transparency = 0.2
+MainStroke.Parent = MainFrame
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 42)
+TitleBar.BackgroundColor3 = BOS.UI_Color
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 16)
+
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(1, -80, 1, 0)
+TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "BOS HUB ULTIMATE  |  Grow A Garden 2  |  V15  🇹🇭"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextSize = 14
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Parent = TitleBar
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -42, 0, 6)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 14
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Parent = TitleBar
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 120, 1, -42)
+Sidebar.Position = UDim2.new(0, 0, 0, 42)
+Sidebar.BackgroundColor3 = Color3.fromRGB(240, 245, 255)
+Sidebar.BackgroundTransparency = 0.5
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = MainFrame
+
+local SidebarList = Instance.new("UIListLayout")
+SidebarList.Padding = UDim.new(0, 5)
+SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
+SidebarList.Parent = Sidebar
+
+local SidePadding = Instance.new("UIPadding")
+SidePadding.PaddingTop = UDim.new(0, 12)
+SidePadding.Parent = Sidebar
+
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -120, 1, -42)
+Content.Position = UDim2.new(0, 120, 0, 42)
+Content.BackgroundTransparency = 1
+Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+Content.ScrollBarThickness = 3
+Content.ScrollBarImageColor3 = BOS.UI_Color
+Content.Parent = MainFrame
+
+local ContentList = Instance.new("UIListLayout")
+ContentList.Padding = UDim.new(0, 8)
+ContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+ContentList.Parent = Content
+
+local ContentPadding = Instance.new("UIPadding")
+ContentPadding.PaddingTop = UDim.new(0, 10)
+ContentPadding.PaddingBottom = UDim.new(0, 10)
+ContentPadding.Parent = Content
+
+-- =============================================
+-- TAB SYSTEM
+-- =============================================
+local Tabs = {}
+local TabButtons = {}
+
+local function CreateTab(name, icon)
+    local TabContainer = Instance.new("Frame")
+    TabContainer.Size = UDim2.new(0.95, 0, 0, 0)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.Visible = false
+    TabContainer.Parent = Content
+    
+    local TabList = Instance.new("UIListLayout")
+    TabList.Padding = UDim.new(0, 6)
+    TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabList.SortOrder = Enum.SortOrder.LayoutOrder
+    TabList.Parent = TabContainer
+    
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Size = UDim2.new(0.85, 0, 0, 38)
+    TabBtn.Text = name .. (icon and " " .. icon or "")
+    TabBtn.BackgroundColor3 = Color3.fromRGB(230, 235, 245)
+    TabBtn.BackgroundTransparency = 0.4
+    TabBtn.TextColor3 = Color3.fromRGB(60, 70, 100)
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.TextSize = 11
+    TabBtn.BorderSizePixel = 0
+    TabBtn.Parent = Sidebar
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
+    
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(Tabs) do t.Visible = false end
+        for _, b in pairs(TabButtons) do
+            b.BackgroundColor3 = Color3.fromRGB(230, 235, 245)
+            b.BackgroundTransparency = 0.4
+            b.TextColor3 = Color3.fromRGB(60, 70, 100)
+        end
+        TabContainer.Visible = true
+        TabBtn.BackgroundColor3 = BOS.UI_Color
+        TabBtn.BackgroundTransparency = 0.1
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    
+    table.insert(Tabs, TabContainer)
+    table.insert(TabButtons, TabBtn)
+    
+    if #Tabs == 1 then
+        TabContainer.Visible = true
+        TabBtn.BackgroundColor3 = BOS.UI_Color
+        TabBtn.BackgroundTransparency = 0.1
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    
+    local function updateCanvas()
+        task.wait(0.1)
+        Content.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 20)
+    end
+    TabContainer.ChildAdded:Connect(updateCanvas)
+    TabContainer.ChildRemoved:Connect(updateCanvas)
+    updateCanvas()
+    
+    return TabContainer
+end
+
+-- =============================================
+-- UI COMPONENTS
+-- =============================================
+
+local function AddToggle(parent, label, configKey)
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0.92, 0, 0, 42)
+    Frame.BackgroundColor3 = Color3.fromRGB(245, 248, 255)
+    Frame.BackgroundTransparency = 0.3
+    Frame.BorderSizePixel = 0
+    Frame.Parent = parent
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
+    
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.65, 0, 1, 0)
+    Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = label
+    Label.TextColor3 = Color3.fromRGB(50, 60, 90)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Frame
+    
+    local ToggleBg = Instance.new("Frame")
+    ToggleBg.Size = UDim2.new(0, 44, 0, 22)
+    ToggleBg.Position = UDim2.new(1, -56, 0.5, -11)
+    ToggleBg.BackgroundColor3 = Color3.fromRGB(200, 210, 230)
+    ToggleBg.BorderSizePixel = 0
+    ToggleBg.Parent = Frame
+    Instance.new("UICorner", ToggleBg).CornerRadius = UDim.new(1, 0)
+    
+    local ToggleDot = Instance.new("Frame")
+    ToggleDot.Size = UDim2.new(0, 18, 0, 18)
+    ToggleDot.Position = UDim2.new(0, 2, 0.5, -9)
+    ToggleDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleDot.BorderSizePixel = 0
+    ToggleDot.Parent = ToggleBg
+    Instance.new("UICorner", ToggleDot).CornerRadius = UDim.new(1, 0)
+    
+    local function updateToggle()
+        if BOS[configKey] then
+            TweenService:Create(ToggleDot, TweenInfo.new(0.15), {Position = UDim2.new(1, -20, 0.5, -9)}):Play()
+            ToggleBg.BackgroundColor3 = BOS.UI_Color
+        else
+            TweenService:Create(ToggleDot, TweenInfo.new(0.15), {Position = UDim2.new(0, 2, 0.5, -9)}):Play()
+            ToggleBg.BackgroundColor3 = Color3.fromRGB(200, 210, 230)
+        end
+    end
+    
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, 0, 1, 0)
+    Btn.BackgroundTransparency = 1
+    Btn.Text = ""
+    Btn.Parent = Frame
+    
+    Btn.MouseButton1Click:Connect(function()
+        BOS[configKey] = not BOS[configKey]
+        updateToggle()
+        if configKey == "Speed" or configKey == "JumpPower" then
+            ApplyMovementSettings()
+        end
+    end)
+    
+    updateToggle()
+    return Frame
+end
+
+local function AddSlider(parent, label, configKey, minVal, maxVal, suffix)
+    if BOS[configKey] == nil then BOS[configKey] = minVal end
+    
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0.92, 0, 0, 65)
+    Frame.BackgroundColor3 = Color3.fromRGB(245, 248, 255)
+    Frame.BackgroundTransparency = 0.3
+    Frame.BorderSizePixel = 0
+    Frame.Parent = parent
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
+    
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -20, 0, 20)
+    Label.Position = UDim2.new(0, 10, 0, 5)
+    Label.BackgroundTransparency = 1
+    Label.Text = label .. ": " .. tostring(BOS[configKey]) .. (suffix or "")
+    Label.TextColor3 = Color3.fromRGB(50, 60, 90)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 10
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Frame
+    
+    local SliderBg = Instance.new("TextButton")
+    SliderBg.Size = UDim2.new(0.9, 0, 0, 24)
+    SliderBg.Position = UDim2.new(0.05, 0, 0, 32)
+    SliderBg.BackgroundColor3 = Color3.fromRGB(220, 230, 245)
+    SliderBg.BorderSizePixel = 0
+    SliderBg.Text = ""
+    SliderBg.Parent = Frame
+    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
+    
+    local Fill = Instance.new("Frame")
+    local percent = (BOS[configKey] - minVal) / (maxVal - minVal)
+    Fill.Size = UDim2.new(percent, 0, 1, 0)
+    Fill.BackgroundColor3 = BOS.UI_Color
+    Fill.BackgroundTransparency = 0.2
+    Fill.BorderSizePixel = 0
+    Fill.Parent = SliderBg
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+    
+    local dragging = false
+    local function setValue(mouseX)
+        local startX = SliderBg.AbsolutePosition.X
+        local width = SliderBg.AbsoluteSize.X
+        if width <= 0 then return end
+        local p = math.clamp((mouseX - startX) / width, 0, 1)
+        local value = math.floor(minVal + (maxVal - minVal) * p + 0.5)
+        BOS[configKey] = value
+        Fill:TweenSize(UDim2.new(p, 0, 1, 0), "Out", "Quad", 0.1, true)
+        Label.Text = label .. ": " .. tostring(value) .. (suffix or "")
+        
+        if configKey == "Speed" or configKey == "JumpPower" then
+            ApplyMovementSettings()
+        end
+    end
+    
+    SliderBg.MouseButton1Down:Connect(function()
+        dragging = true
+        setValue(UserInputService:GetMouseLocation().X)
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            setValue(UserInputService:GetMouseLocation().X)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    return Frame
+end
+
+local function AddButton(parent, label, callback, color)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0.92, 0, 0, 40)
+    Btn.BackgroundColor3 = color or BOS.UI_Color
+    Btn.BackgroundTransparency = 0.15
+    Btn.Text = label
+    Btn.TextColor3 = color and Color3.fromRGB(255,255,255) or Color3.fromRGB(60, 70, 100)
+    Btn.Font = Enum.Font.GothamSemibold
+    Btn.TextSize = 11
+    Btn.BorderSizePixel = 0
+    Btn.Parent = parent
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 10)
+    
+    Btn.MouseButton1Click:Connect(function()
+        if callback then pcall(callback) end
+    end)
+    
+    return Btn
+end
+
+local function AddLabel(parent, text, size)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.92, 0, 0, size or 26)
+    Label.BackgroundColor3 = Color3.fromRGB(240, 245, 255)
+    Label.BackgroundTransparency = 0.5
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(80, 160, 255)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 12
+    Label.Parent = parent
+    Instance.new("UICorner", Label).CornerRadius = UDim.new(0, 8)
+    return Label
+end
+
+-- =============================================
+-- CREATE TABS
+-- =============================================
+
+local MoveTab = CreateTab("🏃 เคลื่อนที่")
+local FarmTab = CreateTab("🌾 ฟาร์ม")
+local AutoTab = CreateTab("⚙ ออโต้")
+local StealTab = CreateTab("👤 ขโมย")
+local VisualTab = CreateTab("👁 ภาพ")
+local ESPTab = CreateTab("🔍 ESP")
+local MiscTab = CreateTab("🎮 เบ็ดเตล็ด")
+local PlayerTab = CreateTab("👥 ผู้เล่น")
+
+-- =============================================
+-- MOVE TAB
+-- =============================================
+AddLabel(MoveTab, "── การเคลื่อนที่ ──", 28)
+AddToggle(MoveTab, "🚀 เดินเร็ว", "Speed")
+AddSlider(MoveTab, "ความเร็วเดิน", "Speed", 16, 350, "")
+AddToggle(MoveTab, "🦘 กระโดดสูง", "JumpPower")
+AddSlider(MoveTab, "พลังกระโดด", "JumpPower", 50, 300, "")
+AddToggle(MoveTab, "♾ กระโดดไม่จำกัด", "InfiniteJump")
+AddToggle(MoveTab, "🔮 เดินทะลุ (Noclip)", "Noclip")
+
+-- =============================================
+-- FARM TAB
+-- =============================================
+AddLabel(FarmTab, "── ฟาร์มอัตโนมัติ ──", 28)
+AddToggle(FarmTab, "🌽 เก็บเกี่ยวอัตโนมัติ", "AutoHarvest")
+AddToggle(FarmTab, "💧 รดน้ำอัตโนมัติ", "AutoWater")
+AddToggle(FarmTab, "🌱 ใส่ปุ๋ยอัตโนมัติ", "AutoFertilize")
+AddToggle(FarmTab, "🌿 ปลูกอัตโนมัติ", "AutoPlant")
+AddSlider(FarmTab, "ระยะฟาร์ม", "FarmRange", 50, 600, " studs")
+AddSlider(FarmTab, "ความเร็วฟาร์ม", "FarmSpeed", 0.005, 0.1, " s")
+
+-- =============================================
+-- AUTO TAB
+-- =============================================
+AddLabel(AutoTab, "── ระบบอัตโนมัติ ──", 28)
+AddToggle(AutoTab, "💰 ขายอัตโนมัติ (ยืนนิ่งๆ)", "AutoSell")
+AddToggle(AutoTab, "📋 รับเควสอัตโนมัติ", "AutoQuest")
+AddToggle(AutoTab, "🎁 รับรางวัลอัตโนมัติ", "AutoClaimReward")
+AddToggle(AutoTab, "🐾 เก็บ Pet อัตโนมัติ", "AutoPetCollect")
+AddToggle(AutoTab, "🛡 ป้องกัน AFK", "AntiAFK")
+AddToggle(AutoTab, "🏠 อัปเกรดสวนอัตโนมัติ", "AutoUpgrade")
+
+-- =============================================
+-- STEAL TAB
+-- =============================================
+AddLabel(StealTab, "── ขโมยผลไม้ ──", 28)
+AddToggle(StealTab, "🍎 ขโมยผลไม้", "StealFruit")
+AddToggle(StealTab, "📦 เก็บดรอปอัตโนมัติ", "AutoCollectDrops")
+
+-- =============================================
+-- VISUAL TAB
+-- =============================================
+AddLabel(VisualTab, "── เอฟเฟกภาพ ──", 28)
+AddToggle(VisualTab, "☀ สว่างทั้งแมพ", "FullBright")
+AddToggle(VisualTab, "🌫 ลบหมอก", "NoFog")
+AddToggle(VisualTab, "🌈 โครมาบลูม", "ChromaBloom")
+
+-- =============================================
+-- ESP TAB
+-- =============================================
+AddLabel(ESPTab, "── ESP ระบบค้นหา ──", 28)
+AddToggle(ESPTab, "🔍 เปิด ESP", "ShowESP")
+AddButton(ESPTab, "📍 วาปหาต้นไม้ใกล้สุด", function()
+    local root = GetRoot()
+    if not root then return end
+    
+    local closest = nil
+    local closestDist = math.huge
+    
+    for _, prompt in pairs(Workspace:GetDescendants()) do
+        if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+            if isHarvestable(prompt) then
+                local parent = prompt.Parent
+                if parent then
+                    local pos = parent:IsA("BasePart") and parent.Position or 
+                               (parent:IsA("Model") and parent:GetPivot().Position)
+                    if pos then
+                        local dist = (root.Position - pos).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            closest = pos
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    if closest then
+        root.CFrame = CFrame.new(closest + Vector3.new(0, 3, 0))
+        StarterGui:SetCore("SendNotification", {
+            Title = "BOS ULTIMATE 🇹🇭",
+            Text = "วาปไปหาต้นไม้แล้ว",
+            Duration = 1,
+        })
+    end
+end)
+
+-- =============================================
+-- MISC TAB
+-- =============================================
+AddLabel(MiscTab, "── เบ็ดเตล็ด ──", 28)
+AddButton(MiscTab, "🔄 รีเซ็ตค่าทั้งหมด", function()
+    for k, v in pairs(BOS) do
+        if type(v) == "boolean" then
+            BOS[k] = false
+        elseif type(v) == "number" then
+            if k == "Speed" then BOS[k] = 100
+            elseif k == "JumpPower" then BOS[k] = 100
+            elseif k == "FarmRange" then BOS[k] = 300
+            elseif k == "FarmSpeed" then BOS[k] = 0.01
+            end
+        end
+    end
+    StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE 🇹🇭", Text = "รีเซ็ตค่าทั้งหมดแล้ว", Duration = 2})
+end)
+
+AddButton(MiscTab, "📋 ข้อมูลสคริปต์", function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "BOS HUB ULTIMATE 🇹🇭",
+        Text = "Grow A Garden 2 | โดย B | AutoSell ยืนนิ่งๆ | ESP | 20+ ฟังก์ชัน",
+        Duration = 4,
+    })
+end)
+
+-- =============================================
+-- PLAYER TAB
+-- =============================================
+AddLabel(PlayerTab, "── ระบบผู้เล่น ──", 28)
+AddButton(PlayerTab, "🎲 วาปหาผู้เล่น (สุ่ม)", function()
+    local players = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(players, player)
+        end
+    end
+    if #players > 0 then
+        local target = players[math.random(1, #players)]
+        local root = GetRoot()
+        if root then
+            root.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 3)
+            StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE 🇹🇭", Text = "วาปไปหา: " .. target.Name, Duration = 1})
+        end
+    end
+end)
+
+AddButton(PlayerTab, "🎯 วาปหาผู้เล่นใกล้สุด", function()
+    local closest = nil
+    local closestDist = math.huge
+    local root = GetRoot()
+    if not root then return end
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local dist = (root.Position - char.HumanoidRootPart.Position).Magnitude
+                if dist < closestDist then
+                    closestDist = dist
+                    closest = player
+                end
+            end
+        end
+    end
+    
+    if closest then
+        root.CFrame = closest.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 3)
+        StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE 🇹🇭", Text = "วาปไปหา: " .. closest.Name, Duration = 1})
+    end
+end)
+
+-- =============================================
+-- SHORTCUT BUTTONS (ลากได้)
+-- =============================================
+
+local function CreateShortcutButton(text, bgColor, position, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 65, 0, 65)
+    btn.Position = position
+    btn.BackgroundColor3 = bgColor
+    btn.BackgroundTransparency = 0.15
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBlack
+    btn.TextSize = 14
+    btn.BorderSizePixel = 0
+    btn.ZIndex = 999
+    btn.Parent = ScreenGui
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+    
+    local shadow = Instance.new("UIStroke")
+    shadow.Thickness = 2
+    shadow.Color = Color3.fromRGB(0, 0, 0)
+    shadow.Transparency = 0.4
+    shadow.Parent = btn
+    
+    local isDragging = false
+    local dragStartPos = nil
+    local startBtnPos = nil
+    local hasMoved = false
+    local lastClick = 0
+    
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = true
+            hasMoved = false
+            dragStartPos = UserInputService:GetMouseLocation()
+            startBtnPos = btn.Position
+        end
+    end)
+    
+    btn.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = false
+            if not hasMoved and callback and tick() - lastClick > 0.3 then
+                lastClick = tick()
+                pcall(callback)
+            end
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = UserInputService:GetMouseLocation() - dragStartPos
+            if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then
+                hasMoved = true
+                btn.Position = UDim2.new(
+                    startBtnPos.X.Scale, startBtnPos.X.Offset + delta.X,
+                    startBtnPos.Y.Scale, startBtnPos.Y.Offset + delta.Y
+                )
+            end
+        end
+    end)
+    
+    return btn
+end
+
+CreateShortcutButton("🌾\nฟาร์ม", Color3.fromRGB(80, 180, 80), UDim2.new(0, 10, 0.7, 0), function()
+    BOS.AutoHarvest = not BOS.AutoHarvest
+    StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE", Text = "ฟาร์ม: " .. (BOS.AutoHarvest and "เปิด" or "ปิด"), Duration = 1})
+end)
+
+CreateShortcutButton("💰\nขาย", Color3.fromRGB(255, 170, 50), UDim2.new(0, 85, 0.7, 0), function()
+    BOS.AutoSell = not BOS.AutoSell
+    StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE", Text = "ขายอัตโนมัติ: " .. (BOS.AutoSell and "เปิด" or "ปิด"), Duration = 1})
+end)
+
+CreateShortcutButton("👤\nวาป", Color3.fromRGB(100, 140, 255), UDim2.new(0, 160, 0.7, 0), function()
+    local players = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(players, player)
+        end
+    end
+    if #players > 0 then
+        local target = players[math.random(1, #players)]
+        local root = GetRoot()
+        if root then
+            root.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 3)
+            StarterGui:SetCore("SendNotification", {Title = "BOS ULTIMATE", Text = "วาปไปหา: " .. target.Name, Duration = 1})
+        end
+    end
+end)
+
+-- =============================================
+-- LOGIC
+-- =============================================
+LogoBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+local dragging = false
+local dragStart, startPos
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = UserInputService:GetMouseLocation()
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = UserInputService:GetMouseLocation() - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- =============================================
+-- MOVEMENT SYSTEMS
+-- =============================================
+RunService.RenderStepped:Connect(function()
+    local hum = GetHumanoid()
+    if hum then
+        if BOS.Speed and hum.WalkSpeed ~= BOS.Speed then hum.WalkSpeed = BOS.Speed end
+        if BOS.JumpPower and hum.JumpPower ~= BOS.JumpPower then hum.JumpPower = BOS.JumpPower end
+    end
+end)
+
+local lastJump = 0
+UserInputService.JumpRequest:Connect(function()
+    if BOS.InfiniteJump and tick() - lastJump > 0.1 then
+        lastJump = tick()
+        local hum = GetHumanoid()
+        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if BOS.Noclip then
+        local char = GetCharacter()
+        if char then
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end
+end)
+
+-- =============================================
+-- VISUAL SYSTEMS
+-- =============================================
+RunService.RenderStepped:Connect(function()
+    if BOS.FullBright then
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+    end
+    if BOS.NoFog then
+        Lighting.FogStart = 0
+        Lighting.FogEnd = 100000
+    end
+    if BOS.ChromaBloom then
+        pcall(function()
+            Lighting.Bloom.Intensity = 0.5
+            Lighting.Bloom.Size = 24
+            Lighting.Bloom.Threshold = 0.5
+        end)
+    end
+end)
+
+-- =============================================
+-- AUTO HARVEST/WATER/FERTILIZE/PLANT
+-- =============================================
+task.spawn(function()
+    local lastAction = 0
+    while true do
+        local anyAuto = BOS.AutoHarvest or BOS.AutoWater or BOS.AutoFertilize or BOS.AutoPlant
+        if anyAuto then
+            local root = GetRoot()
+            if root then
+                for _, prompt in pairs(Workspace:GetDescendants()) do
+                    if not anyAuto then break end
+                    if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                        local action = string.lower(prompt.ActionText or "")
+                        local allowed = false
+                        
+                        if BOS.AutoHarvest and (action:find("harvest") or action:find("collect") or action:find("pick")) then
+                            allowed = true
+                        elseif BOS.AutoWater and action:find("water") then
+                            allowed = true
+                        elseif BOS.AutoFertilize and action:find("fertilize") then
+                            allowed = true
+                        elseif BOS.AutoPlant and action:find("plant") then
+                            allowed = true
+                        end
+                        
+                        if allowed then
+                            local parent = prompt.Parent
+                            if parent then
+                                local pos = parent:IsA("BasePart") and parent.Position or 
+                                           (parent:IsA("Model") and parent:GetPivot().Position)
+                                if pos and (root.Position - pos).Magnitude < BOS.FarmRange then
+                                    if tick() - lastAction > BOS.FarmSpeed then
+                                        lastAction = tick()
+                                        TriggerPrompt(prompt)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(BOS.FarmSpeed)
+    end
+end)
+
+-- =============================================
+-- AUTO SELL (ULTIMATE - STANDING STILL)
+-- ขายได้ทุกที่ ยืนนิ่งๆ ไม่ต้องวาป
+-- =============================================
+task.spawn(function()
+    local sellCache = {}
+    
+    local function FireAllSellMethods()
+        -- วิธีที่ 1: Fire ProximityPrompt โดยไม่ต้องอยู่ใกล้
+        for _, prompt in pairs(workspace:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                local action = string.lower(prompt.ActionText or "")
+                local parentName = string.lower(prompt.Parent and prompt.Parent.Name or "")
+                
+                if action:find("sell") or action:find("ขาย") or 
+                   parentName:find("sell") or parentName:find("shop") or
+                   parentName:find("market") then
+                    pcall(function()
+                        if fireproximityprompt then
+                            fireproximityprompt(prompt, math.huge)
+                        end
+                        prompt:Fire()
+                    end)
+                end
+            end
+        end
+        
+        -- วิธีที่ 2: ส่ง RemoteEvent ทุกตัวที่มีคำว่า Sell/ขาย
+        for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+            if remote:IsA("RemoteEvent") then
+                local name = string.lower(remote.Name)
+                if name:find("sell") or name:find("ขาย") or name:find("trade") or 
+                   name:find("market") or name:find("shop") then
+                    pcall(function()
+                        remote:FireServer()
+                        remote:FireServer("Sell")
+                        remote:FireServer("SellAll")
+                        remote:FireServer("sell")
+                        remote:FireServer("all")
+                    end)
+                end
+            end
+        end
+        
+        -- วิธีที่ 3: ส่ง Remote ที่ชื่อเฉพาะ
+        local specificRemotes = {
+            "SellRemote", "SellEvent", "SellAll", "SellItem",
+            "ShopRemote", "MarketRemote", "TradeRemote", "SellCrop",
+            "SellFruit", "ขายของ", "ขายผลไม้", "sellRemote"
+        }
+        
+        for _, name in pairs(specificRemotes) do
+            local remote = ReplicatedStorage:FindFirstChild(name)
+            if remote and remote:IsA("RemoteEvent") then
+                pcall(function()
+                    remote:FireServer()
+                    remote:FireServer("Sell")
+                    remote:FireServer("All")
+                end)
+            end
+            
+            local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
+            if remotesFolder then
+                local remote2 = remotesFolder:FindFirstChild(name)
+                if remote2 and remote2:IsA("RemoteEvent") then
+                    pcall(function() remote2:FireServer() end)
+                end
+            end
+        end
+        
+        -- วิธีที่ 4: กดปุ่มขายใน UI
+        for _, gui in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+            if gui:IsA("ScreenGui") then
+                for _, btn in pairs(gui:GetDescendants()) do
+                    if btn:IsA("TextButton") then
+                        local btnText = string.lower(btn.Text or "")
+                        if btnText:find("sell") or btnText:find("ขาย") or
+                           btnText:find("ยืนยัน") or btnText:find("confirm") then
+                            pcall(function()
+                                btn:Fire()
+                                btn:Fire("Click")
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- วิธีที่ 5: ส่งผ่าน Remote หลัก
+        local mainRemotes = {"MainRemote", "GameRemote", "PlayerRemote", "ActionRemote"}
+        for _, name in pairs(mainRemotes) do
+            local remote = ReplicatedStorage:FindFirstChild(name)
+            if remote and remote:IsA("RemoteEvent") then
+                pcall(function()
+                    remote:FireServer("Sell")
+                    remote:FireServer("SellAll")
+                end)
+            end
+        end
+    end
+    
+    while true do
+        if BOS.AutoSell then
+            pcall(FireAllSellMethods)
+            task.wait(0.15)
+        else
+            task.wait(1)
+        end
+    end
+end)
+
+-- =============================================
+-- STEAL FRUIT
+-- =============================================
+task.spawn(function()
+    local lastSteal = 0
+    while true do
+        if BOS.StealFruit then
+            local root = GetRoot()
+            if root then
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer then
+                        local char = player.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            root.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(math.random(-3,3), 3, math.random(-3,3))
+                            task.wait(0.3)
+                            
+                            for _, prompt in pairs(Workspace:GetDescendants()) do
+                                if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                                    if isHarvestable(prompt) then
+                                        if tick() - lastSteal > 0.05 then
+                                            lastSteal = tick()
+                                            TriggerPrompt(prompt)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- =============================================
+-- AUTO COLLECT DROPS
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AutoCollectDrops then
+            local root = GetRoot()
+            if root then
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and not obj.Anchored and obj.Size.Magnitude < 4 then
+                        local name = string.lower(obj.Name or "")
+                        if name:find("coin") or name:find("money") or name:find("cash") or
+                           name:find("gem") or name:find("diamond") or name:find("drop") or
+                           name:find("loot") or name:find("item") or name:find("seed") then
+                            local dist = (root.Position - obj.Position).Magnitude
+                            if dist < BOS.FarmRange then
+                                root.CFrame = root.CFrame:Lerp(CFrame.new(obj.Position + Vector3.new(0,3,0)), 0.3)
+                                task.wait(0.05)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
+-- =============================================
+-- AUTO QUEST
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AutoQuest then
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                    local action = string.lower(prompt.ActionText or "")
+                    if action:find("quest") or action:find("mission") or action:find("daily") then
+                        TriggerPrompt(prompt)
+                        task.wait(1)
+                    end
+                end
+            end
+        end
+        task.wait(3)
+    end
+end)
+
+-- =============================================
+-- AUTO CLAIM REWARD
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AutoClaimReward then
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                    local action = string.lower(prompt.ActionText or "")
+                    if action:find("claim") or action:find("reward") or action:find("collect") then
+                        TriggerPrompt(prompt)
+                        task.wait(0.5)
+                    end
+                end
+            end
+        end
+        task.wait(2)
+    end
+end)
+
+-- =============================================
+-- AUTO PET COLLECT
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AutoPetCollect then
+            for _, pet in pairs(Workspace:GetDescendants()) do
+                if pet:IsA("Model") and string.lower(pet.Name or ""):find("pet") then
+                    local root = GetRoot()
+                    if root then
+                        root.CFrame = pet:GetPivot() * CFrame.new(0, 3, 0)
+                        task.wait(0.5)
+                        for _, prompt in pairs(pet:GetDescendants()) do
+                            if prompt:IsA("ProximityPrompt") then
+                                TriggerPrompt(prompt)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(1)
+    end
+end)
+
+-- =============================================
+-- ANTI AFK
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AntiAFK then
+            pcall(function()
+                local vu = VirtualUser
+                if vu then
+                    vu:CaptureController()
+                    vu:ClickButton1(Vector2.new())
+                end
+            end)
+            task.wait(60)
+        else
+            task.wait(5)
+        end
+    end
+end)
+
+-- =============================================
+-- AUTO UPGRADE
+-- =============================================
+task.spawn(function()
+    while true do
+        if BOS.AutoUpgrade then
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                    local action = string.lower(prompt.ActionText or "")
+                    if action:find("upgrade") then
+                        TriggerPrompt(prompt)
+                        task.wait(2)
+                    end
+                end
+            end
+        end
+        task.wait(10)
+    end
+end)
+
+-- =============================================
+-- ESP SYSTEM
+-- =============================================
+
+local ESPObjects = {}
+local ESPFolder = Instance.new("Folder")
+ESPFolder.Name = "BOS_ESP"
+ESPFolder.Parent = workspace
+
+local function CreateESP(part, text, color)
+    if not part or not part.Parent then return nil end
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BOS_ESP_" .. part.Name
+    billboard.Size = UDim2.new(0, 120, 0, 35)
+    billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = part
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = color
+    frame.BackgroundTransparency = 0.25
+    frame.BorderSizePixel = 0
+    frame.Parent = billboard
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
+    
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = text
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextSize = 10
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = frame
+    
+    local line = Instance.new("Part")
+    line.Name = "ESP_Line"
+    line.Size = Vector3.new(0.1, 0.1, 0.1)
+    line.Anchored = true
+    line.CanCollide = false
+    line.Material = Enum.Material.Neon
+    line.Color = color
+    line.Transparency = 0.4
+    line.Parent = ESPFolder
+    
+    return {billboard = billboard, line = line, part = part}
+end
+
+local function UpdateESPLine(espData, playerPos)
+    if not espData or not espData.part or not espData.part.Parent then return end
+    if not espData.line or not espData.line.Parent then return end
+    
+    local objPos = espData.part.Position
+    local distance = (playerPos - objPos).Magnitude
+    
+    if distance < 100 then
+        espData.line.Visible = true
+        local midPoint = (playerPos + objPos) / 2
+        local length = distance
+        espData.line.Size = Vector3.new(0.1, 0.1, length)
+        espData.line.CFrame = CFrame.new(midPoint, objPos) * CFrame.new(0, 0, -length/2)
+    else
+        espData.line.Visible = false
+    end
+end
+
+local function ClearESP()
+    for _, esp in pairs(ESPObjects) do
+        pcall(function()
+            if esp.billboard then esp.billboard:Destroy() end
+            if esp.line then esp.line:Destroy() end
+        end)
+    end
+    ESPObjects = {}
+end
+
+task.spawn(function()
+    while true do
+        if BOS.ShowESP then
+            local root = GetRoot()
+            local playerPos = root and root.Position or Vector3.new(0,0,0)
+            
+            local harvestableObjects = {}
+            for _, prompt in pairs(workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                    if isHarvestable(prompt) then
+                        local parent = prompt.Parent
+                        if parent then
+                            local part = parent:IsA("BasePart") and parent or parent:FindFirstChild("HumanoidRootPart") or parent:FindFirstChild("Head")
+                            if part and part:IsA("BasePart") then
+                                table.insert(harvestableObjects, {part = part, name = prompt.ActionText or "Harvest"})
+                            end
+                        end
+                    end
+                end
+            end
+            
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and not obj.Anchored and obj.Size.Magnitude < 4 then
+                    local name = string.lower(obj.Name or "")
+                    if name:find("coin") or name:find("money") or name:find("drop") or name:find("loot") or name:find("item") then
+                        table.insert(harvestableObjects, {part = obj, name = "💰 " .. obj.Name})
+                    end
+                end
+            end
+            
+            ClearESP()
+            
+            for _, obj in pairs(harvestableObjects) do
+                if obj.part and obj.part.Parent then
+                    local color = Color3.fromRGB(100, 255, 100)
+                    if obj.name:find("water") then
+                        color = Color3.fromRGB(100, 200, 255)
+                    elseif obj.name:find("fertilize") then
+                        color = Color3.fromRGB(255, 200, 100)
+                    elseif obj.name:find("coin") or obj.name:find("money") then
+                        color = Color3.fromRGB(255, 215, 0)
+                    end
+                    local esp = CreateESP(obj.part, obj.name, color)
+                    table.insert(ESPObjects, esp)
+                end
+            end
+            
+            for _, esp in pairs(ESPObjects) do
+                UpdateESPLine(esp, playerPos)
+            end
+            
+            task.wait(0.5)
+        else
+            ClearESP()
+            task.wait(1)
+        end
+    end
+end)
+
+-- =============================================
+-- CHARACTER RESPAWN HANDLER
+-- =============================================
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    ApplyMovementSettings()
+end)
+
+-- =============================================
+-- FINAL NOTIFICATION
+-- =============================================
+StarterGui:SetCore("SendNotification", {
+    Title = "BOS HUB ULTIMATE 🇹🇭",
+    Text = "Grow A Garden 2 | AutoSell ยืนนิ่งๆ | ESP | โดย B",
+    Duration = 6,
+})
+
+print("╔════════════════════════════════════════╗")
+print("║   BOS HUB ULTIMATE - LOADED!          ║")
+print("║                                        ║")
+print("║  ✅ UI สีขาวฟ้า Premium                ║")
+print("║  ✅ 20+ ฟังก์ชัน                        ║")
+print("║  ✅ AutoSell ยืนนิ่งๆ ขายได้ทุกที่      ║")
+print("║  ✅ ESP แสดงชื่อ+เส้นทาง               ║")
+print("║  ✅ ปุ่มลัด 3 ปุ่ม (ลากได้)            ║")
+print("║  ✅ ไม่ต้องวาป ไม่ต้องขยับ             ║")
+print("║  ✅ รองรับ Grow A Garden 2             ║")
+print("║                                        ║")
+print("║  🇹🇭 Developed by B                     ║")
+print("╚════════════════════════════════════════╝")
